@@ -346,13 +346,16 @@ export class CommandClient extends EventSpewer {
         }
       }
     };
+
+    const exts = ['.js', '.cjs', '.mjs', ...(IS_TS_NODE ? ['.ts'] : [])];
+
     for (let file of files) {
-      if (!file.endsWith((IS_TS_NODE) ? '.ts' : '.js')) {
+      if (exts.every(ext => !file.endsWith(ext))) {
         continue;
       }
       const filepath = path.resolve(directory, file);
       try {
-        let importedCommand: any = require(filepath);
+        let importedCommand: any = file.endsWith('.ts') ? require(filepath) : (await import(filepath)).default;
         if (typeof(importedCommand) === 'object' && importedCommand.__esModule) {
           importedCommand = importedCommand.default;
         }
